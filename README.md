@@ -2,7 +2,6 @@
 
 Forge is an AI-powered startup validation platform that helps founders and product teams evaluate startup ideas using market analysis, competitor intelligence, monetization insights, and investor-style feedback.
 
-Built as a simulation of how modern startups validate ideas before building products.
 
 ---
 
