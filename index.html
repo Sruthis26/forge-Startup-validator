@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Forge — AI Startup Validator</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06080f;--bg2:#0c0e1a;--bg3:#131525;
+  --border:#ffffff0c;--border2:#ffffff15;--border3:#ffffff22;
+  --text:#eef0f8;--muted:#7b7d94;--muted2:#4a4c60;
+  --gold:#f5c842;--gold-dim:#f5c8421a;
+  --orange:#ff7d3b;--orange-dim:#ff7d3b18;
+  --green:#3ddc84;--green-dim:#3ddc8418;
+  --blue:#4d9fff;--blue-dim:#4d9fff18;
+  --purple:#b57bff;--purple-dim:#b57bff18;
+  --red:#ff5c5c;--red-dim:#ff5c5c18;
+  --cyan:#00e5cc;--cyan-dim:#00e5cc18;
+  --r:10px;--r2:16px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.65;min-height:100vh}
+
+/* HERO */
+.hero{text-align:center;padding:52px 24px 40px;background:radial-gradient(ellipse 80% 50% at 50% 0%,#1a1d3070,transparent);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 40px,#ffffff03 40px,#ffffff03 41px),repeating-linear-gradient(90deg,transparent,transparent 40px,#ffffff02 40px,#ffffff02 41px);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--gold-dim);border:1px solid #f5c84228;border-radius:20px;padding:5px 14px;font-size:11px;font-family:'DM Mono',monospace;color:var(--gold);letter-spacing:.08em;margin-bottom:18px}
+h1{font-size:clamp(28px,6vw,54px);font-weight:900;line-height:1.06;letter-spacing:-.02em;margin-bottom:12px}
+.grad{background:linear-gradient(135deg,var(--gold),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:15px;color:var(--muted);max-width:540px;margin:0 auto 30px;line-height:1.7;font-weight:300}
+
+/* FORM */
+.form-wrap{max-width:700px;margin:0 auto;padding:0 20px}
+.f-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);padding:22px;margin-bottom:14px;transition:border-color .2s}
+.f-card:focus-within{border-color:#f5c84228}
+.f-lbl{font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.req{color:var(--gold)}
+textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;padding:13px 15px;outline:none;resize:vertical;min-height:100px;line-height:1.6;transition:border-color .2s}
+textarea:focus{border-color:#f5c84235}
+textarea::placeholder{color:var(--muted2)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:11px}
+select,input[type=text]{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;padding:10px 13px;outline:none;appearance:none;transition:border-color .2s}
+select:focus,input[type=text]:focus{border-color:#f5c84235}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237b7d94' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.api-note{font-size:11px;color:var(--muted2);font-family:'DM Mono',monospace;margin-top:6px}
+.api-note a{color:var(--gold);text-decoration:none}
+.submit-btn{width:100%;background:linear-gradient(135deg,var(--gold),var(--orange));border:none;border-radius:var(--r2);color:#06080f;font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;padding:16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px;letter-spacing:.01em}
+.submit-btn:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 8px 28px #f5c84228}
+.submit-btn:active{transform:none}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* LOADING */
+.loading{display:none;text-align:center;padding:50px 24px;max-width:700px;margin:0 auto}
+.loading.show{display:block}
+.spin{width:48px;height:48px;border:2px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin .85s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lsteps{display:flex;flex-direction:column;gap:6px;max-width:300px;margin:16px auto 0}
+.lstep{font-size:12px;font-family:'DM Mono',monospace;color:var(--muted2);display:flex;align-items:center;gap:7px;padding:4px 0;transition:color .3s}
+.lstep::before{content:'○';font-size:10px}
+.lstep.active{color:var(--gold)}.lstep.active::before{content:'◉';animation:pulse 1.2s ease infinite}
+.lstep.done{color:var(--green)}.lstep.done::before{content:'●';color:var(--green)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ERROR */
+.err{display:none;background:var(--red-dim);border:1px solid #ff5c5c20;border-radius:var(--r);padding:13px 17px;color:var(--red);font-size:13px;max-width:700px;margin:0 auto 14px;line-height:1.7;white-space:pre-wrap}
+.err.show{display:block}
+
+/* RESULTS */
+.results{display:none;max-width:920px;margin:0 auto;padding:0 20px 80px}
+.results.show{display:block}
+
+/* SCORE HERO */
+.score-hero{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);padding:28px;margin-bottom:16px;display:flex;gap:28px;align-items:center;flex-wrap:wrap;position:relative;overflow:hidden}
+.score-hero::before{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,#f5c84210,transparent 70%);pointer-events:none}
+.ring-wrap{flex-shrink:0;width:120px;height:120px;position:relative}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-num{font-size:34px;font-weight:900;letter-spacing:-.02em}
+.ring-lbl{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:.06em}
+.score-right{flex:1;min-width:180px}
+.score-name{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);margin-bottom:4px}
+.score-verdict{font-size:20px;font-weight:800;margin-bottom:6px;letter-spacing:-.01em}
+.score-summary{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:12px}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;font-family:'DM Mono',monospace;padding:3px 10px;border-radius:20px;border:1px solid}
+.tg{color:var(--gold);border-color:#f5c84228;background:var(--gold-dim)}
+.tgr{color:var(--green);border-color:#3ddc8428;background:var(--green-dim)}
+.tr{color:var(--red);border-color:#ff5c5c28;background:var(--red-dim)}
+.tb{color:var(--blue);border-color:#4d9fff28;background:var(--blue-dim)}
+.tp{color:var(--purple);border-color:#b57bff28;background:var(--purple-dim)}
+.to{color:var(--orange);border-color:#ff7d3b28;background:var(--orange-dim)}
+
+/* PILLARS */
+.pillar-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px;margin-bottom:16px}
+.pillar-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:13px;text-align:center}
+.pillar-num{font-size:24px;font-weight:900;margin-bottom:1px}
+.pillar-lbl{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.bar-wrap{margin-bottom:11px}
+.bar-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.bar-name{font-size:13px;font-weight:500}
+.bar-val{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted)}
+.bar-bg{height:6px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px}
+
+/* RESULT CARD */
+.r-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:20px;margin-bottom:13px}
+.r-card:hover{border-color:var(--border2)}
+.r-hd{display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.r-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.r-title{font-size:15px;font-weight:700}
+.r-sub{font-size:11px;color:var(--muted);margin-top:1px;font-family:'DM Mono',monospace}
+
+/* INNER GRID — for problem statement, market 2-col, investor 2-col */
+.ig2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.i-card{background:var(--bg3);border-radius:var(--r);padding:12px}
+.i-lbl{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.i-text{font-size:13px;line-height:1.6}
+
+/* MARKET BARS */
+.mkt-row{display:flex;align-items:center;gap:11px;margin-bottom:8px}
+.mkt-lbl{font-size:12px;font-family:'DM Mono',monospace;color:var(--muted);min-width:48px}
+.mkt-bg{flex:1;height:24px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.mkt-bar{height:100%;border-radius:4px;display:flex;align-items:center;padding:0 9px;font-size:11px;font-weight:700;font-family:'DM Mono',monospace;color:#06080f;min-width:24px}
+.mkt-val{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);min-width:56px;text-align:right}
+
+/* COMPETITOR TABLE */
+.comp-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.comp-tbl th{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--muted);font-size:10px;font-weight:400;font-family:'DM Mono',monospace;text-align:left;text-transform:uppercase;letter-spacing:.05em}
+.comp-tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top;font-size:13px}
+.ctag{font-size:10px;padding:2px 7px;border-radius:4px;font-family:'DM Mono',monospace;white-space:nowrap;border:1px solid}
+
+/* AUDIENCE PERSONAS */
+.persona-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.persona-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:15px}
+.p-emoji{font-size:26px;margin-bottom:9px}
+.p-name{font-size:13px;font-weight:700;margin-bottom:1px}
+.p-role{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:9px}
+.p-attr{font-size:12px;color:var(--muted);margin-bottom:4px;line-height:1.5}
+.p-attr strong{color:var(--text);font-weight:500}
+
+/* MONETIZATION */
+.mono-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px}
+.mono-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.mono-model{font-size:13px;font-weight:600;margin-bottom:3px}
+.mono-range{font-size:16px;font-weight:800;color:var(--gold);margin-bottom:4px}
+.mono-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:4px}
+.mono-pot{font-size:11px;font-family:'DM Mono',monospace;color:var(--cyan)}
+.mono-time{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);margin-top:3px}
+
+/* RISKS */
+.risk-item{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)}
+.risk-item:last-child{border-bottom:none}
+.risk-badge{font-size:10px;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:4px;flex-shrink:0;margin-top:2px;white-space:nowrap;border:1px solid}
+.rh{color:var(--red);border-color:#ff5c5c30;background:var(--red-dim)}
+.rm2{color:var(--orange);border-color:#ff7d3b30;background:var(--orange-dim)}
+.rl{color:var(--green);border-color:#3ddc8430;background:var(--green-dim)}
+.risk-title{font-size:13px;font-weight:600;margin-bottom:3px}
+.risk-desc{font-size:12px;color:var(--muted);line-height:1.6}
+.risk-mit{font-size:11px;color:var(--green);margin-top:4px}
+
+/* ROADMAP */
+.rm-list{display:flex;flex-direction:column}
+.rm-item{display:flex;gap:13px;padding-bottom:16px;position:relative}
+.rm-item:not(:last-child)::before{content:'';position:absolute;left:13px;top:28px;width:1px;height:calc(100% - 12px);background:var(--border2)}
+.rm-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;font-family:'DM Mono',monospace;z-index:1}
+.rm-body{flex:1;padding-top:3px}
+.rm-phase{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);margin-bottom:2px}
+.rm-milestone{font-size:13px;font-weight:600;margin-bottom:3px}
+.rm-actions{font-size:12px;color:var(--muted);line-height:1.6}
+
+/* INVESTOR */
+.inv-narrative{background:var(--bg3);border-radius:var(--r);padding:13px;margin-bottom:11px}
+.inv-flags{background:var(--red-dim);border:1px solid #ff5c5c14;border-radius:var(--r);padding:12px}
+.flag-row{display:flex;gap:7px;align-items:flex-start;margin-bottom:5px}
+.flag-row:last-child{margin-bottom:0}
+
+/* ACTIONS */
+.action-row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)}
+.action-row:last-child{border-bottom:none}
+.action-num{font-size:11px;font-family:'DM Mono',monospace;color:var(--gold);font-weight:600;min-width:22px;margin-top:2px}
+
+/* CTA */
+.cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.btn-outline{background:none;border:1px solid var(--border2);border-radius:var(--r);color:var(--muted);font-family:'Outfit',sans-serif;font-size:13px;padding:9px 17px;cursor:pointer;transition:all .15s}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--orange));border:none;border-radius:var(--r);color:#06080f;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;padding:9px 17px;cursor:pointer}
+
+@media(max-width:600px){
+  .g2,.ig2,.persona-grid,.mono-grid,.pillar-grid{grid-template-columns:1fr}
+  .score-hero{flex-direction:column}
+  .comp-tbl{font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  
+  <h1>Validate Your <span class="grad">Startup Idea</span><br>Before You Build</h1>
+  
+</div>
+
+<div class="form-wrap">
+  <div class="f-card">
+    <div class="f-lbl"><span class="req">✦</span> Describe your startup idea</div>
+    <textarea id="ideaInput" placeholder="Be specific"></textarea>
+    <div class="g2">
+      <div>
+        <div class="f-lbl" style="margin:11px 0 7px">Industry</div>
+        <select id="industry">
+          <option>SaaS / B2B Software</option>
+          <option>Consumer App / Mobile</option>
+          <option>FinTech / Payments</option>
+          <option>HealthTech / MedTech</option>
+          <option>EdTech / Learning</option>
+          <option>E-commerce / Retail</option>
+          <option>AI / ML Infrastructure</option>
+          <option>Creator Economy / Media</option>
+          <option>CleanTech / Climate</option>
+          <option>HRTech / Future of Work</option>
+          <option>LegalTech / Compliance</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div>
+        <div class="f-lbl" style="margin:11px 0 7px">Stage</div>
+        <select id="stage">
+          <option>Idea (pre-product)</option>
+          <option>MVP in progress</option>
+          <option>MVP launched, 0 revenue</option>
+          <option>Early revenue (&lt;$10K MRR)</option>
+          <option>Growth ($10K–$100K MRR)</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:11px">
+      <div class="f-lbl" style="margin-bottom:7px">Target geography (optional)</div>
+      <input type="text" id="geo" placeholder="e.g. USA, India, Southeast Asia, Global…"/>
+    </div>
+  </div>
+
+  <div class="f-card">
+    <div class="f-lbl"><span class="req">✦</span> Groq API Key</div>
+    <input type="text" id="apiKey" placeholder="gsk_..." autocomplete="off"/>
+    
+  </div>
+
+  <div class="err" id="errBox"></div>
+
+  <button class="submit-btn" id="submitBtn" onclick="validate()">
+    <span>⬡</span> Validate My Startup Idea — Free
+  </button>
+</div>
+
+<div class="loading" id="loading">
+  <div class="spin"></div>
+  <p style="font-size:16px;font-weight:600;margin-bottom:3px">Analysing your idea…</p>
+  <p style="font-size:13px;color:var(--muted)">Groq Llama 3.3 70B is running your validation</p>
+  <div class="lsteps">
+    <div class="lstep" id="ls1">Parsing idea &amp; extracting signals</div>
+    <div class="lstep" id="ls2">Scoring problem-solution fit</div>
+    <div class="lstep" id="ls3">Sizing TAM / SAM / SOM</div>
+    <div class="lstep" id="ls4">Mapping competitor landscape</div>
+    <div class="lstep" id="ls5">Building audience personas</div>
+    <div class="lstep" id="ls6">Modelling monetization paths</div>
+    <div class="lstep" id="ls7">Running risk &amp; feasibility matrix</div>
+    <div class="lstep" id="ls8">Generating investor report</div>
+  </div>
+</div>
+
+<div class="results" id="results"></div>
+
+<script>
+let lastResult=null;
+
+async function validate(){
+  const idea    = document.getElementById('ideaInput').value.trim();
+  const apiKey  = document.getElementById('apiKey').value.trim();
+  const industry= document.getElementById('industry').value;
+  const stage   = document.getElementById('stage').value;
+  const geo     = document.getElementById('geo').value.trim()||'Global';
+
+  if(!idea)  {showErr('Please describe your startup idea first.');return;}
+  if(!apiKey){showErr('Please enter your Groq API key (gsk_...).');return;}
+  if(!apiKey.startsWith('gsk_')){showErr('Groq keys start with gsk_...\nGet a free one at console.groq.com/keys');return;}
+
+  hideErr();
+  document.getElementById('submitBtn').disabled=true;
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('results').innerHTML='';
+
+  const IDS=['ls1','ls2','ls3','ls4','ls5','ls6','ls7','ls8'];
+  let si=0;
+  const timer=setInterval(()=>{
+    if(si>0)document.getElementById(IDS[si-1]).classList.remove('active');
+    if(si<IDS.length){document.getElementById(IDS[si]).classList.add('active');si++;}
+    else clearInterval(timer);
+  },900);
+
+  const prompt=`You are a world-class startup analyst and investor. Analyse this idea and return an honest, rigorous validation report.
+
+IDEA: ${idea}
+INDUSTRY: ${industry}
+STAGE: ${stage}
+GEOGRAPHY: ${geo}
+
+Return ONLY a valid raw JSON object — no markdown, no backticks, no preamble:
+
+{
+  "startup_name": "short punchy name suggestion",
+  "one_liner": "one-sentence pitch",
+  "overall_score": 72,
+  "verdict": "Promising — Execution Risk",
+  "verdict_color": "gold",
+  "summary": "3-4 sentence overview: opportunity, key strength, biggest risk, recommended next step",
+  "score_tags": ["#B2B SaaS","#High Growth","#Competitive","#Execution Risk"],
+  "pillar_scores": {
+    "problem_clarity": 78,
+    "market_opportunity": 82,
+    "solution_uniqueness": 65,
+    "monetization_viability": 70,
+    "execution_feasibility": 55,
+    "competitive_moat": 48
+  },
+  "problem_statement": {
+    "core_pain": "what exactly is the pain — 1-2 sentences",
+    "who_feels_it": "who experiences it most acutely",
+    "current_solutions": "how people solve it today and why that's inadequate",
+    "urgency": "high",
+    "willingness_to_pay": "high"
+  },
+  "market_analysis": {
+    "tam": "$42B",
+    "tam_reasoning": "brief explanation",
+    "sam": "$8.4B",
+    "sam_reasoning": "brief explanation",
+    "som": "$840M",
+    "som_reasoning": "realistic 3-year SOM",
+    "growth_rate": "18% CAGR",
+    "key_trends": ["trend 1","trend 2","trend 3"],
+    "timing": "why now — what tailwinds make this the right moment"
+  },
+  "competitors": [
+    {"name":"Competitor A","type":"Direct","stage":"Series B","strength":"what they do well","weakness":"their gap","differentiation":"how your idea beats them","threat":"high"},
+    {"name":"Competitor B","type":"Indirect","stage":"Public","strength":"strength","weakness":"weakness","differentiation":"diff","threat":"medium"},
+    {"name":"Competitor C","type":"Adjacent","stage":"Seed","strength":"strength","weakness":"weakness","differentiation":"diff","threat":"low"}
+  ],
+  "your_edge": ["Key differentiator 1","Key differentiator 2","Key differentiator 3"],
+  "audience_personas": [
+    {"name":"Persona Name","role":"Job Title","age_range":"25-35","emoji":"👩","pain":"specific pain","goal":"what they want to achieve","objection":"biggest objection to buying","channel":"where to reach them","willingness_to_pay":"$X/month"},
+    {"name":"Persona 2","role":"Role","age_range":"30-45","emoji":"👨","pain":"pain","goal":"goal","objection":"objection","channel":"channel","willingness_to_pay":"$Y/month"}
+  ],
+  "monetization": [
+    {"model":"SaaS Subscription","monthly_range":"$49–$299/mo","potential":"$2–8M ARR Year 3","description":"pricing tiers and what is included","timeline":"0–6 months"},
+    {"model":"Usage-Based","monthly_range":"$0.01–0.05/unit","potential":"$500K–2M ARR Year 3","description":"what usage metric triggers billing","timeline":"6–12 months"},
+    {"model":"Enterprise Contracts","monthly_range":"$2K–20K/mo","potential":"$3–15M ARR Year 3","description":"enterprise tier and support","timeline":"12–24 months"}
+  ],
+  "risks": [
+    {"title":"Risk Title","severity":"high","description":"2-sentence description","mitigation":"specific mitigation strategy"},
+    {"title":"Risk 2","severity":"medium","description":"desc","mitigation":"mitigation"},
+    {"title":"Risk 3","severity":"medium","description":"desc","mitigation":"mitigation"},
+    {"title":"Risk 4","severity":"low","description":"desc","mitigation":"mitigation"}
+  ],
+  "roadmap": [
+    {"phase":"0–3 months","milestone":"Validate core hypothesis","actions":["Action 1","Action 2","Action 3"],"focus":"Discovery"},
+    {"phase":"3–6 months","milestone":"Launch MVP to 50 beta users","actions":["Action 1","Action 2"],"focus":"Product"},
+    {"phase":"6–12 months","milestone":"$10K MRR from 30 paying customers","actions":["Action 1","Action 2"],"focus":"Revenue"},
+    {"phase":"12–24 months","milestone":"Series A readiness","actions":["Action 1","Action 2"],"focus":"Scale"}
+  ],
+  "investor_take": {
+    "fundability_score": 62,
+    "ideal_round": "Pre-Seed $500K",
+    "use_of_funds": "40% product, 35% GTM, 25% team",
+    "key_metrics_for_raise": ["metric 1","metric 2","metric 3"],
+    "narrative": "2-3 sentence investor pitch story",
+    "red_flags": ["red flag 1","red flag 2"]
+  },
+  "immediate_actions": [
+    "Specific action to take this week",
+    "Action 2","Action 3","Action 4","Action 5"
+  ]
+}
+
+Rules: overall_score 0–100. verdict_color must be exactly "green", "gold", or "red". urgency and willingness_to_pay must be exactly "high", "medium", or "low". Be honest — do not inflate scores.`;
+
+  try{
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body:JSON.stringify({
+        model:'llama-3.3-70b-versatile',
+        temperature:0.4,
+        max_tokens:3000,
+        messages:[
+          {role:'system',content:'You are a world-class startup analyst. Respond with valid raw JSON only — no markdown, no code fences, no text before or after the JSON.'},
+          {role:'user',content:prompt}
+        ]
+      })
+    });
+    clearInterval(timer);
+    IDS.forEach(id=>{document.getElementById(id).classList.remove('active');document.getElementById(id).classList.add('done');});
+
+    const data=await res.json();
+    if(data.error)throw new Error(data.error.message||JSON.stringify(data.error));
+    const raw=data.choices?.[0]?.message?.content||'';
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const j=clean.indexOf('{'),k=clean.lastIndexOf('}');
+    if(j===-1)throw new Error('Unexpected response format — try again.');
+    lastResult=JSON.parse(clean.slice(j,k+1));
+    document.getElementById('loading').classList.remove('show');
+    renderResults(lastResult);
+  }catch(err){
+    clearInterval(timer);
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('submitBtn').disabled=false;
+    showErr('Analysis failed: '+err.message+'\n\nFixes:\n1. Key must start with gsk_ — get one free at console.groq.com/keys\n2. Try again in a few seconds');
+  }
+}
+
+function showErr(m){const e=document.getElementById('errBox');e.textContent=m;e.classList.add('show');}
+function hideErr(){document.getElementById('errBox').classList.remove('show');}
+
+// ── SCORE COLOR ──────────────────────────────────────────────────────────────
+function sc(v){return v>=75?'var(--green)':v>=55?'var(--gold)':v>=35?'var(--orange)':'var(--red)';}
+function vc(c){return c==='green'?'var(--green)':c==='gold'?'var(--gold)':'var(--red)';}
+
+// ── RENDER ───────────────────────────────────────────────────────────────────
+function renderResults(r){
+  const score=r.overall_score||0;
+  const col=vc(r.verdict_color||'gold');
+  const C=283, off=C*(1-score/100);
+
+  const pillars=[
+    {k:'problem_clarity',     l:'Problem Clarity'},
+    {k:'market_opportunity',  l:'Market Opp.'},
+    {k:'solution_uniqueness', l:'Solution Uniq.'},
+    {k:'monetization_viability',l:'Monetization'},
+    {k:'execution_feasibility',l:'Execution'},
+    {k:'competitive_moat',    l:'Competitive Moat'},
+  ];
+  const ps=r.pillar_scores||{};
+
+  // ── score ring + verdict ──
+  const tagCls=['tg','tb','tr','tgr','tp','to'];
+  const tags=(r.score_tags||[]).map((t,i)=>`<span class="tag ${tagCls[i%6]}">${t}</span>`).join('');
+
+  // ── pillar mini cards ──
+  const pillarCards=pillars.map(p=>{
+    const v=ps[p.k]||0;
+    return `<div class="pillar-card"><div class="pillar-num" style="color:${sc(v)}">${v}</div><div class="pillar-lbl">${p.l}</div></div>`;
+  }).join('');
+
+  // ── pillar bars inside problem card ──
+  const pillarBars=pillars.map(p=>{
+    const v=ps[p.k]||0;
+    return `<div class="bar-wrap">
+      <div class="bar-row"><span class="bar-name">${p.l}</span><span class="bar-val">${v}/100</span></div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${v}%;background:${sc(v)}"></div></div>
+    </div>`;
+  }).join('');
+
+  // ── problem statement ──
+  const pm=r.problem_statement||{};
+  const urgColor=pm.urgency==='high'?'var(--red)':pm.urgency==='medium'?'var(--amber)':'var(--muted)';
+  const wtpColor=(pm.willingness_to_pay||'')===('high')?'var(--green)':'var(--muted)';
+
+  // ── market bars ──
+  const ma=r.market_analysis||{};
+  const mktBars=[
+    {l:'TAM',v:ma.tam||'—',w:100,c:'var(--gold)'},
+    {l:'SAM',v:ma.sam||'—',w:60, c:'var(--orange)'},
+    {l:'SOM',v:ma.som||'—',w:26, c:'var(--green)'},
+  ].map(b=>`<div class="mkt-row">
+    <span class="mkt-lbl">${b.l}</span>
+    <div class="mkt-bg"><div class="mkt-bar" style="width:${b.w}%;background:${b.c}">${b.v}</div></div>
+    <span class="mkt-val">${b.v}</span>
+  </div>`).join('');
+
+  // ── competitors ──
+  const comps=(r.competitors||[]).map(c=>{
+    const tc=c.threat==='high'?'tr':c.threat==='medium'?'to':'tgr';
+    return `<tr>
+      <td><strong>${c.name}</strong></td>
+      <td><span class="ctag tb" style="border-color:#4d9fff22">${c.type}</span></td>
+      <td style="color:var(--muted);font-size:12px">${c.stage||'—'}</td>
+      <td style="color:var(--muted);font-size:12px">${c.strength}</td>
+      <td style="font-size:12px">${c.differentiation}</td>
+      <td><span class="ctag ${tc}">${c.threat}</span></td>
+    </tr>`;
+  }).join('');
+
+  const edge=(r.your_edge||[]).map(e=>
+    `<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px">
+      <span style="color:var(--gold);flex-shrink:0">◈</span><span style="font-size:13px">${e}</span>
+    </div>`).join('');
+
+  // ── personas ──
+  const personas=(r.audience_personas||[]).map(p=>`
+    <div class="persona-card">
+      <div class="p-emoji">${p.emoji||'👤'}</div>
+      <div class="p-name">${p.name}</div>
+      <div class="p-role">${p.role}${p.age_range?' · '+p.age_range:''}</div>
+      <div class="p-attr"><strong>Pain:</strong> ${p.pain}</div>
+      <div class="p-attr"><strong>Goal:</strong> ${p.goal}</div>
+      <div class="p-attr"><strong>Objection:</strong> ${p.objection}</div>
+      <div class="p-attr"><strong>Channel:</strong> ${p.channel}</div>
+      <div style="margin-top:7px"><span class="tag tg">${p.willingness_to_pay}</span></div>
+    </div>`).join('');
+
+  // ── monetization ──
+  const monos=(r.monetization||[]).map(m=>`
+    <div class="mono-card">
+      <div class="mono-model">${m.model}</div>
+      <div class="mono-range">${m.monthly_range}</div>
+      <div class="mono-desc">${m.description}</div>
+      <div class="mono-pot">Potential: ${m.potential}</div>
+      <div class="mono-time">Timeline: ${m.timeline}</div>
+    </div>`).join('');
+
+  // ── risks ──
+  const risks=(r.risks||[]).map(ri=>{
+    const bc=ri.severity==='high'?'rh':ri.severity==='medium'?'rm2':'rl';
+    return `<div class="risk-item">
+      <span class="risk-badge ${bc}">${ri.severity.toUpperCase()}</span>
+      <div>
+        <div class="risk-title">${ri.title}</div>
+        <div class="risk-desc">${ri.description}</div>
+        <div class="risk-mit">⚡ ${ri.mitigation}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // ── roadmap ──
+  const rmCols=['#f5c842','#3ddc84','#4d9fff','#b57bff'];
+  const roadmap=(r.roadmap||[]).map((item,i)=>`
+    <div class="rm-item">
+      <div class="rm-dot" style="background:${rmCols[i]||'#f5c842'}18;border:1px solid ${rmCols[i]||'#f5c842'}35;color:${rmCols[i]||'#f5c842'}">${i+1}</div>
+      <div class="rm-body">
+        <div class="rm-phase">${item.phase} · ${item.focus||''}</div>
+        <div class="rm-milestone">${item.milestone}</div>
+        <div class="rm-actions">${(item.actions||[]).map(a=>'• '+a).join('<br>')}</div>
+      </div>
+    </div>`).join('');
+
+  // ── investor ──
+  const inv=r.investor_take||{};
+  const keyMetrics=(inv.key_metrics_for_raise||[]).map(m=>`<span class="tag tb" style="font-size:11px">${m}</span>`).join(' ');
+  const redFlags=(inv.red_flags||[]).map(f=>
+    `<div class="flag-row"><span style="color:var(--red);font-size:11px;margin-top:3px;flex-shrink:0">▲</span><span style="font-size:13px;color:var(--muted)">${f}</span></div>`).join('');
+
+  // ── actions ──
+  const actions=(r.immediate_actions||[]).map((a,i)=>
+    `<div class="action-row">
+      <span class="action-num">${String(i+1).padStart(2,'0')}</span>
+      <span style="font-size:13px">${a}</span>
+    </div>`).join('');
+
+  // ── BUILD HTML ──
+  document.getElementById('results').innerHTML=`
+
+    <div class="score-hero">
+      <div class="ring-wrap">
+        <svg width="120" height="120" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="45" fill="none" stroke="#1a1d30" stroke-width="6"/>
+          <circle cx="50" cy="50" r="45" fill="none" stroke="${col}" stroke-width="6"
+            stroke-dasharray="${C}" stroke-dashoffset="${off}" stroke-linecap="round"/>
+        </svg>
+        <div class="ring-center">
+          <div class="ring-num" style="color:${col}">${score}</div>
+          <div class="ring-lbl">/100</div>
+        </div>
+      </div>
+      <div class="score-right">
+        <div class="score-name">${r.startup_name||''} · ${r.one_liner||''}</div>
+        <div class="score-verdict" style="color:${col}">${r.verdict||'—'}</div>
+        <div class="score-summary">${r.summary||''}</div>
+        <div class="tags">${tags}</div>
+      </div>
+    </div>
+
+    <div class="pillar-grid">${pillarCards}</div>
+
+    <!-- PROBLEM -->
+    <div class="r-card">
+      <div class="r-hd">
+        <div class="r-icon" style="background:var(--red-dim)">⚡</div>
+        <div><div class="r-title">Problem Statement</div><div class="r-sub">Pain clarity, urgency &amp; willingness to pay</div></div>
+      </div>
+      <div class="ig2">
+        <div class="i-card"><div class="i-lbl">Core Pain</div><div class="i-text">${pm.core_pain||'—'}</div></div>
+        <div class="i-card"><div class="i-lbl">Who Feels It</div><div class="i-text">${pm.who_feels_it||'—'}</div></div>
+        <div class="i-card"><div class="i-lbl">Current Alternatives</div><div class="i-text">${pm.current_solutions||'—'}</div></div>
+        <div class="i-card">
+          <div style="display:flex;gap:18px">
+            <div><div class="i-lbl">Urgency</div><div style="font-size:15px;font-weight:800;color:${urgColor}">${pm.urgency||'—'}</div></div>
+            <div><div class="i-lbl">WTP</div><div style="font-size:15px;font-weight:800;color:${wtpColor}">${pm.willingness_to_pay||'—'}</div></div>
+          </div>
+        </div>
+      </div>
+      ${pillarBars}
+    </div>
+
+    <!-- MARKET -->
+    <div class="r-card">
+      <div class="r-hd">
+        <div class="r-icon" style="background:var(--gold-dim)">◎</div>
+        <div><div class="r-title">Market Opportunity</div><div class="r-sub">${ma.growth_rate||''} · TAM / SAM / SOM</div></div>
+      </div>
+      ${mktBars}
+      <div class="ig2" style="margin-top:12px">
+        <div class="i-card"><div class="i-lbl">Why Now</div><div class="i-text">${ma.timing||'—'}</div></div>
+        <div class="i-card"><div class="i-lbl">Key Tailwinds</div>${(ma.key_trends||[]).map(t=>`<div style="font-size:12px;margin-bottom:4px;display:flex;gap:5px"><span style="color:var(--gold)">→</span>${t}</div>`).join('')}</div>
+      </div>
+    </div>
+
+    <!-- COMPETITORS -->
+    <div class="r-card">
+      <div class="r-hd">
+        <div class="r-icon" style="background:var(--blue-dim)">⊞</div>
+        <div><div class="r-title">Competitive Landscape</div><div class="r-sub">${(r.competitors||[]).length} competitors mapped</div></div>
+      </div>
+      <div style="overflow-x:auto;margin-bottom:13px">
+        <table class="comp-tbl">
+          <thead><tr><th>Competitor</th><th>Type</th><th>Stage</th><th>Their Strength</th><th>Your Edge</th><th>Threat</th></tr></thead>
+          <tbody>${comps}</tbody>
+        </table>
+      </div>
+      <div style="background:var(--bg3);border-radius:var(--r);padding:13px">
+        <div class="i-lbl" style="color:var(--gold);margin-bottom:9px">Your Competitive Edge</div>
+        ${edge}
+      </div>
+    </div>
+
+    <!-- AUDIENCE -->
+    <div class="r-card">
+      <div class="r-hd">
+        <div class="r-icon" style="background:var(--purple-dim)">◈</div>
+        <div><div class="r-title">Target Audience &amp; Personas</div><div class="r-sub">Early adopter profiles with acquisition channels</div></div>
+      </div>
+      <div class="persona-grid">${personas}</div>
+    </div>
+
+    <!-- MONETIZATION -->
+    <div class="r-card">
+      <div class="r-hd">
+        <div class="r-icon" style="background:var(--green-dim)">$</div>
+        <div><div class="r-title">Monetization Strategy</div><div class="r-sub">Revenue models &amp; ARR potential</div></div>
+      </div>
+      <div class="mono-grid">${monos}</div>
+    </div>
+
+    <!-- RISKS -->
+    <div class="r-card">
+      <div class="r-hd">
+        <div class="r-icon" style="background:var(--red-dim)">⚠</div>
+        <div><div class="r-title">Risk Matrix</div><div class="r-sub">Risks + mitigation strategies</div></div>
+      </div>
+      ${risks}
+    </div>
+
+    <!-- ROADMAP -->
+    <div class="r-card">
+      <div class="r-hd">
+        <div class="r-icon" style="background:var(--cyan-dim)">→</div>
+        <div><div class="r-title">Go-to-Market Roadmap</div><div class="r-sub">Milestone-based execution plan</div></div>
+      </div>
+      <div class="rm-list">${roadmap}</div>
+    </div>
+
+    <!-- INVESTOR -->
+    <div class="r-card">
+      <div class="r-hd">
+        <div class="r-icon" style="background:var(--orange-dim)">⬡</div>
+        <div><div class="r-title">Investor Perspective</div><div class="r-sub">Fundability ${inv.fundability_score||'—'}/100 · ${inv.ideal_round||'—'}</div></div>
+      </div>
+      <div class="inv-narrative">
+        <div class="i-lbl">Investor Narrative</div>
+        <div style="font-size:13px;line-height:1.7;margin-top:4px">${inv.narrative||'—'}</div>
+      </div>
+      <div class="ig2">
+        <div class="i-card"><div class="i-lbl">Use of Funds</div><div style="font-size:13px;margin-top:4px">${inv.use_of_funds||'—'}</div></div>
+        <div class="i-card"><div class="i-lbl">Metrics to Show at Raise</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${keyMetrics}</div></div>
+      </div>
+      <div class="inv-flags">
+        <div class="i-lbl" style="color:var(--red);margin-bottom:8px">Red Flags to Address Before Raising</div>
+        ${redFlags}
+      </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="r-card" style="border-color:#f5c84218">
+      <div class="r-hd">
+        <div class="r-icon" style="background:var(--gold-dim)">✦</div>
+        <div><div class="r-title">Immediate Next Steps</div><div class="r-sub">What to do in the next 7 days</div></div>
+      </div>
+      ${actions}
+    </div>
+
+    <div class="cta-row">
+      <button class="btn-gold" onclick="copyJSON()">↓ Export JSON Report</button>
+      <button class="btn-outline" onclick="location.reload()">Validate Another Idea</button>
+    </div>
+  `;
+
+  document.getElementById('results').classList.add('show');
+  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById('submitBtn').disabled=false;
+}
+
+function copyJSON(){
+  if(!lastResult)return;
+  navigator.clipboard.writeText(JSON.stringify(lastResult,null,2)).then(()=>alert('JSON report copied!'));
+}
+</script>
+</body>
+</html>
