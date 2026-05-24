@@ -182,12 +182,4 @@ The goal was to simulate how founders and product teams evaluate startup opportu
 ---
 
 
-# Future Improvements
-
-- Startup comparison mode
-- Exportable PDF reports
-- Saved startup reports
-- Competitor web scraping
-- AI pitch deck generation
-
 ---
