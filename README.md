@@ -7,10 +7,7 @@ Forge is an AI-powered startup validation platform that helps founders and produ
 
 # Live Demo
 
-🔗 Add your deployed link here
-
-Example:
-https://forge-validator.vercel.app
+forge-validator.netlify.app
 
 ---
 
