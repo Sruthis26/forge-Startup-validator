@@ -141,16 +141,16 @@ This creates realistic startup validation simulations without requiring backend 
 # Screenshots
 
 ## Startup Validation Dashboard
-![Forge Startup Validation](startup_validation.png)
+![Forge Startup Validation](startup_valid.png)
 
 ## Problem Analysis
 ![Forge Problem Analysis](problem_analysis.png)
 
 ## Market Opportunity
-![Forge Market Opportunity](market_opportunity.png)
+![Forge Market Opportunity](market.png)
 
 ## Competitive Landscape
-![Forge Competitive Landscape](competitive_landscape.png)
+![Forge Competitive Landscape](competitive.png)
 
 ---
 
